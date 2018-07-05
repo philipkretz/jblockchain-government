@@ -11,6 +11,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -21,7 +22,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.binary.Base64;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
 import de.pk.jblockchain.common.SignatureUtils;
@@ -37,16 +37,20 @@ import de.pk.jblockchain.common.domain.Transaction;
  */
 public class BlockchainClient {
 
-	@Value("${server.address}")
 	private static String serverAddr;
 
-	@Value("${server.port}")
 	private static String serverPort;
 
-	@Value("${server.ssl.enabled}")
 	private static Boolean sslEnabled;
 
 	public static void main(String args[]) throws Exception {
+		Properties props = new Properties();
+		// System.out.println(BlockchainClient.class.getResource("/."));
+		props.load(BlockchainClient.class.getResourceAsStream("/application.properties"));
+		serverAddr = props.getProperty("server.address");
+		serverPort = props.getProperty("server.port");
+		sslEnabled = Boolean.valueOf(props.getProperty("server.ssl.enabled"));
+
 		CommandLineParser parser = new DefaultParser();
 		Options options = getOptions();
 		try {

@@ -1,5 +1,8 @@
 package de.pk.jblockchain.node.service;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+
 import java.security.KeyPair;
 
 import org.junit.Assert;
@@ -28,6 +31,15 @@ public class TransactionServiceTests {
 
 	@Before
 	public void setUp() throws Exception {
+		AddressService addressServiceMock = mock(AddressService.class);
+		doNothing().when(addressServiceMock).save();
+		TransactionService transactionServiceMock = mock(TransactionService.class);
+		doNothing().when(transactionServiceMock).save();
+		BlockService blockServiceMock = mock(BlockService.class);
+		doNothing().when(blockServiceMock).save();
+		NodeService nodeServiceMock = mock(NodeService.class);
+		doNothing().when(nodeServiceMock).save();
+
 		keyPair = SignatureUtils.generateKeyPair();
 		address = new Address(keyPair.getPublic().getEncoded());
 		addressService.add(address);

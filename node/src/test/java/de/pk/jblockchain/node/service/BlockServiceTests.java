@@ -1,5 +1,8 @@
 package de.pk.jblockchain.node.service;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,12 +45,21 @@ public class BlockServiceTests {
 
 	@Before
 	public void setUp() throws Exception {
+		AddressService addressServiceMock = mock(AddressService.class);
+		doNothing().when(addressServiceMock).save();
+		TransactionService transactionServiceMock = mock(TransactionService.class);
+		doNothing().when(transactionServiceMock).save();
+		BlockService blockServiceMock = mock(BlockService.class);
+		doNothing().when(blockServiceMock).save();
+		NodeService nodeServiceMock = mock(NodeService.class);
+		doNothing().when(nodeServiceMock).save();
+
 		privateKey = IOUtils
 				.toByteArray(Thread.currentThread().getContextClassLoader().getResourceAsStream("key.priv"));
 		byte[] publicKey = IOUtils
 				.toByteArray(Thread.currentThread().getContextClassLoader().getResourceAsStream("key.pub"));
 		address = new Address(publicKey);
-		addressService.add(address);
+		this.addressService.add(address);
 	}
 
 	@Test

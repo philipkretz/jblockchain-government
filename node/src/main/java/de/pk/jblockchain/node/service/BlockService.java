@@ -1,5 +1,7 @@
 package de.pk.jblockchain.node.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.pk.jblockchain.common.domain.Block;
 import de.pk.jblockchain.common.domain.Node;
@@ -32,6 +36,29 @@ public class BlockService {
 
 	public List<Block> getBlockchain() {
 		return blockchain;
+	}
+
+	/**
+	 * load initial values
+	 *
+	 * @param List<Block>
+	 */
+	public void init(List<Block> blockchain) {
+		this.blockchain = blockchain;
+	}
+
+	/**
+	 * save values
+	 *
+	 */
+	public void save() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			mapper.writeValue(new File("/store/blockchain.json"), this.blockchain);
+			System.out.println("Blockchain Saved!");
+		} catch (IOException e) {
+			System.out.println("Unable to save blockchain: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -57,6 +84,7 @@ public class BlockService {
 	public synchronized boolean append(Block block) throws GeneralSecurityException {
 		if (verify(block)) {
 			blockchain.add(block);
+			this.save();
 
 			// remove transactions from pool
 			block.getTransactions().forEach(transactionService::remove);

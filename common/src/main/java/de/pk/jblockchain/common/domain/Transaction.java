@@ -2,14 +2,11 @@ package de.pk.jblockchain.common.domain;
 
 import java.util.Arrays;
 
-import javax.persistence.Entity;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.primitives.Longs;
 
-@Entity
 public class Transaction {
 
 	/**

@@ -1,20 +1,19 @@
 package de.pk.jblockchain.common.domain;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.stream.Collectors;
-
-import javax.persistence.Entity;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.primitives.Longs;
 import com.lambdaworks.crypto.SCrypt;
 
-@Entity
 public class Block {
 
 	/**
@@ -48,23 +47,39 @@ public class Block {
 	 */
 	private long timestamp;
 
-	// @Value("${hashing.scrypt.cpuCostParam}")
-	private int cpuCostParam = 256;
-
-	// @Value("${hashing.scrypt.memoryCostParam}")
-	private int memoryCostParam = 4;
-
-	// @Value("${hashing.scrypt.parallelizationParam}")
-	private int parallelizationParam = 2;
-
-	private int dkLen = 32;
-
-	private byte[] salt = { 91, -75, -13, 76, 105, 57, 69, -74, -111, 113, 27, -47, 88, -86, -72, 95 };
+	/**
+	 * Parameters for SCrypt hash algorithm
+	 */
+	private int cpuCostParam;
+	private int memoryCostParam;
+	private int parallelizationParam;
+	private int dkLen;
+	private byte[] salt;
 
 	public Block() {
+		Properties props = new Properties();
+		// System.out.println(Block.class.getResource("/."));
+		try {
+			props.load(Block.class.getResourceAsStream("/application.properties"));
+			this.cpuCostParam = Integer.valueOf(props.getProperty("hashing.scrypt.cpuCostParam"));
+			this.memoryCostParam = Integer.valueOf(props.getProperty("hashing.scrypt.memoryCostParam"));
+			this.parallelizationParam = Integer.valueOf(props.getProperty("hashing.scrypt.parallelizationParam"));
+			this.dkLen = Integer.valueOf(props.getProperty("hashing.scrypt.dkLen"));
+			String[] saltArr = props.getProperty("hashing.scrypt.salt").split(",");
+			this.salt = new byte[16];
+			int i = 0;
+			for (String saltByte : saltArr) {
+				this.salt[i] = Byte.valueOf(saltByte.trim());
+				i++;
+			}
+		} catch (IOException e) {
+			System.err.println("Error at reading properties file");
+			e.printStackTrace();
+		}
 	}
 
 	public Block(byte[] previousBlockHash, List<Transaction> transactions, long tries) throws GeneralSecurityException {
+		this();
 		this.previousBlockHash = previousBlockHash;
 		this.transactions = transactions;
 		this.tries = tries;

@@ -12,7 +12,6 @@
     <artifactId>node</artifactId>
 
     <dependencies>
-
         <dependency>
             <groupId>de.pk</groupId>
             <artifactId>common</artifactId>
@@ -33,6 +32,16 @@
             <scope>test</scope>
         </dependency>
 
+		<dependency>
+	        <groupId>org.apache.httpcomponents</groupId>
+	        <artifactId>httpclient</artifactId>
+	        <version>4.5.2</version>
+	    </dependency>
+	            
+        <dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-databind</artifactId>
+		</dependency>
     </dependencies>
 
 

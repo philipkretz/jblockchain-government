@@ -1,5 +1,7 @@
 package de.pk.jblockchain.node.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
@@ -18,8 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.pk.jblockchain.common.domain.Node;
 import de.pk.jblockchain.node.Config;
@@ -41,7 +47,14 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 
 	private Node self;
 	private Set<Node> knownNodes = new HashSet<>();
-	private RestTemplate restTemplate = new RestTemplate();
+	private RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
+
+	private ClientHttpRequestFactory getClientHttpRequestFactory() {
+		int timeout = 5000;
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+		clientHttpRequestFactory.setConnectTimeout(timeout);
+		return clientHttpRequestFactory;
+	}
 
 	@Autowired
 	public NodeService(BlockService blockService, TransactionService transactionService,
@@ -49,6 +62,29 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 		this.blockService = blockService;
 		this.transactionService = transactionService;
 		this.addressService = addressService;
+	}
+
+	/**
+	 * load initial values
+	 *
+	 * @param Set<Node>
+	 */
+	public void init(Set<Node> nodes) {
+		this.knownNodes = nodes;
+	}
+
+	/**
+	 * save values
+	 *
+	 */
+	public void save() {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			mapper.writeValue(new File("/store/node.json"), this.knownNodes);
+			System.out.println("Nodes Saved!");
+		} catch (IOException e) {
+			System.out.println("Unable to save nodes: " + e.getMessage());
+		}
 	}
 
 	/**
@@ -99,10 +135,12 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 
 	public synchronized void add(Node node) {
 		knownNodes.add(node);
+		this.save();
 	}
 
 	public synchronized void remove(Node node) {
 		knownNodes.remove(node);
+		this.save();
 	}
 
 	/**
@@ -155,26 +193,28 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 			String externalIP = "";
 			String protocol = this.sslEnabled ? "https" : "http";
 			try {
-				RestTemplate restTemplate = new RestTemplate();
 				externalIP = restTemplate.getForObject("http://checkip.amazonaws.com/", String.class);
+				externalIP = externalIP.substring(0, externalIP.length() - 1);
 				try {
-					result = restTemplate.getForObject("{protocol}://{externalIP}:{port}/check-loopback", String.class,
-							protocol, externalIP, port);
+					result = restTemplate.getForObject("{protocol}://{externalIP}:{port}/address/check-loopback",
+							String.class, protocol, externalIP, port);
 				} catch (Exception ex) {
-					LOG.error("External ip address " + externalIP + " is not reachable at port " + port, ex);
+					LOG.warn("External ip address " + externalIP + " is not reachable at port " + port, ex);
 				}
 			} catch (Exception ex) {
-				LOG.error("Could not establish a network connection to discover external ip address.", ex);
+				LOG.warn("Could not establish a network connection to discover external ip address.", ex);
 			}
 
-			if (result == "found") {
+			if (result == "connected") {
 				// discover external ip and try loopback
 				host = externalIP;
 
 				LOG.info("Found own external ip address " + externalIP);
 			} else {
 				// discover addresses from network interfaces
+				String hostTest;
 
+				LOG.info("discover private IP address from network interfaces");
 				try {
 					Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
 					while (e.hasMoreElements()) {
@@ -183,19 +223,30 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 						while (ee.hasMoreElements()) {
 							InetAddress i = ee.nextElement();
 							String hostAddr = i.getHostAddress().toString();
+							LOG.info("hostAddr=" + hostAddr);
 							if (hostAddr == "127.0.0.1" || hostAddr.substring(0, 3) == "10."
 									|| (hostAddr.substring(0, 4) == "172." && hostAddr.substring(6, 7) == "."
 											&& (Integer.valueOf(hostAddr.substring(4, 6)) >= 16
 													&& Integer.valueOf(hostAddr.substring(4, 6)) <= 31))
 									|| hostAddr.substring(0, 8) == "192.168.") {
-								host = i.getHostAddress();
+								hostTest = hostAddr;
 
-								LOG.info("Found local ip address " + i.getHostAddress());
+								LOG.info("Found local ip address " + hostTest);
 							} else {
-								host = i.getHostAddress();
+								hostTest = hostAddr;
 
-								LOG.info("Found own external ip address " + i.getHostAddress());
-								break;
+								LOG.info("Found own external ip address " + hostTest);
+							}
+							try {
+								result = restTemplate.getForObject(
+										"{protocol}://{hostTest}:{port}/address/check-loopback", String.class, protocol,
+										hostTest, port);
+								if (result == "connected") {
+									host = hostTest;
+									break;
+								}
+							} catch (Exception ex) {
+								LOG.warn("ip address " + hostTest + " is not reachable at port " + port, ex);
 							}
 						}
 					}
