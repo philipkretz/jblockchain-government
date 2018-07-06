@@ -3,11 +3,14 @@ package de.pk.jblockchain.node.service;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -16,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -43,6 +47,9 @@ public class BlockServiceTests {
 	private Address address;
 	private byte[] privateKey;
 
+	@Value("${storage.path}")
+	private String storePath;
+
 	@Before
 	public void setUp() throws Exception {
 		AddressService addressServiceMock = mock(AddressService.class);
@@ -60,6 +67,14 @@ public class BlockServiceTests {
 				.toByteArray(Thread.currentThread().getContextClassLoader().getResourceAsStream("key.pub"));
 		address = new Address(publicKey);
 		this.addressService.add(address);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		Files.deleteIfExists(Paths.get(System.getProperty("user.home") + this.storePath + "transaction.json.gz"));
+		Files.deleteIfExists(Paths.get(System.getProperty("user.home") + this.storePath + "blockchain.json.gz"));
+		Files.deleteIfExists(Paths.get(System.getProperty("user.home") + this.storePath + "address.json.gz"));
+		Files.deleteIfExists(Paths.get(System.getProperty("user.home") + this.storePath + "node.json.gz"));
 	}
 
 	@Test

@@ -1,17 +1,20 @@
 package de.pk.jblockchain.node.service;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,6 +27,9 @@ import de.pk.jblockchain.common.domain.Transaction;
 
 @Service
 public class TransactionService {
+
+	@Value("${storage.path}")
+	private String storePath;
 
 	private final static Logger LOG = LoggerFactory.getLogger(TransactionService.class);
 
@@ -56,13 +62,25 @@ public class TransactionService {
 	 * save values
 	 *
 	 */
-	public void save() {
+	public void save() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		FileOutputStream fStream = null;
+		GZIPOutputStream zStream = null;
 		try {
-			mapper.writeValue(new File("/store/transaction.json"), this.transactionPool);
+			fStream = new FileOutputStream(System.getProperty("user.home") + this.storePath + "transaction.json.gz");
+			zStream = new GZIPOutputStream(new BufferedOutputStream(fStream));
+			mapper.writeValue(zStream, this.transactionPool);
+
+		} finally {
+			if (zStream != null) {
+				zStream.flush();
+				zStream.close();
+			}
+			if (fStream != null) {
+				fStream.flush();
+				fStream.close();
+			}
 			System.out.println("Transactions Saved!");
-		} catch (IOException e) {
-			System.out.println("Unable to save transactions: " + e.getMessage());
 		}
 	}
 
@@ -76,7 +94,11 @@ public class TransactionService {
 	public synchronized boolean add(Transaction transaction) {
 		if (verify(transaction)) {
 			transactionPool.add(transaction);
-			this.save();
+			try {
+				this.save();
+			} catch (IOException e) {
+				System.out.println("Unable to save transactions: " + e.getMessage());
+			}
 			return true;
 		}
 		return false;
@@ -90,7 +112,11 @@ public class TransactionService {
 	 */
 	public void remove(Transaction transaction) {
 		transactionPool.remove(transaction);
-		this.save();
+		try {
+			this.save();
+		} catch (IOException e) {
+			System.out.println("Unable to save transactions: " + e.getMessage());
+		}
 	}
 
 	/**

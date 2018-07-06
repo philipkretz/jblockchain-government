@@ -1,6 +1,7 @@
 package de.pk.jblockchain.node.service;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 import javax.annotation.PreDestroy;
 
@@ -32,6 +34,9 @@ import de.pk.jblockchain.node.Config;
 
 @Service
 public class NodeService implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
+
+	@Value("${storage.path}")
+	private String storePath;
 
 	private final static Logger LOG = LoggerFactory.getLogger(NodeService.class);
 
@@ -77,13 +82,25 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 	 * save values
 	 *
 	 */
-	public void save() {
+	public void save() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		FileOutputStream fStream = null;
+		GZIPOutputStream zStream = null;
 		try {
-			mapper.writeValue(new File("/store/node.json"), this.knownNodes);
-			System.out.println("Nodes Saved!");
-		} catch (IOException e) {
-			System.out.println("Unable to save nodes: " + e.getMessage());
+			fStream = new FileOutputStream(System.getProperty("user.home") + this.storePath + "node.json.gz");
+			zStream = new GZIPOutputStream(new BufferedOutputStream(fStream));
+			mapper.writeValue(zStream, this.knownNodes);
+
+		} finally {
+			if (zStream != null) {
+				zStream.flush();
+				zStream.close();
+			}
+			if (fStream != null) {
+				fStream.flush();
+				fStream.close();
+			}
+			System.out.println("Nodes saved!");
 		}
 	}
 
@@ -135,12 +152,20 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 
 	public synchronized void add(Node node) {
 		knownNodes.add(node);
-		this.save();
+		try {
+			this.save();
+		} catch (IOException e) {
+			System.out.println("Unable to save nodes: " + e.getMessage());
+		}
 	}
 
 	public synchronized void remove(Node node) {
 		knownNodes.remove(node);
-		this.save();
+		try {
+			this.save();
+		} catch (IOException e) {
+			System.out.println("Unable to save nodes: " + e.getMessage());
+		}
 	}
 
 	/**

@@ -70,7 +70,7 @@ public class BlockchainClient {
 			startMiner();
 		} else if (line.hasOption("stop-miner")) {
 			stopMiner();
-		} else if (line.hasOption("address")) {
+		} else if (line.hasOption("publish-address")) {
 			String publickey = line.getOptionValue("publickey");
 			if (publickey == null) {
 				throw new ParseException("publickey is required");
@@ -182,25 +182,46 @@ public class BlockchainClient {
 	private static Options getOptions() {
 		OptionGroup actions = new OptionGroup();
 		actions.addOption(new Option("k", "keypair", false, "generate private/public key pair"));
-		actions.addOption(new Option("a", "address", false, "publish new address"));
+		actions.addOption(new Option("a", "publish-address", false, "publish new address"));
 		actions.addOption(new Option("t", "transaction", false, "publish new transaction"));
+		actions.addOption(new Option("ac", "add-citizen", false, "add a new citizen"));
+		actions.addOption(new Option("m", "marriage", false, "declare 2 people as marriaged"));
+		actions.addOption(new Option("d", "divorce", false, "declare 2 people as divorced"));
+		actions.addOption(new Option("dd", "declare-death", false, "declare death of a citizen"));
+		actions.addOption(new Option("da", "declare-alive", false, "declare a citizen alive after death"));
+		actions.addOption(new Option("c", "add-city", false, "add a new city"));
+		actions.addOption(new Option("st", "add-street", false, "add a new street"));
+		actions.addOption(new Option("h", "add-house", false, "add a new house"));
+		actions.addOption(new Option("saddr", "set-address", false, "change the address of a citizen"));
+		actions.addOption(new Option("sc", "show-cities", false, "show all cities"));
+		actions.addOption(new Option("scz", "show-citizens", false, "show all citizen of a city"));
+		actions.addOption(new Option("scd", "show-citizen-details", false, "show details of a citizen"));
+		actions.addOption(new Option("sbd", "show-birth-death-rate", false, "show birth death rate of a city"));
 		actions.setRequired(true);
 
 		Options options = new Options();
 		options.addOptionGroup(actions);
-		options.addOption(Option.builder("o").longOpt("node").hasArg().argName("Node URL")
-				.desc("needed for address and transaction publishing").build());
-		options.addOption(Option.builder("n").longOpt("name").hasArg().argName("name for new address")
-				.desc("needed for address publishing").build());
-		options.addOption(Option.builder("p").longOpt("publickey").hasArg().argName("path to key file")
-				.desc("needed for address publishing").build());
-		options.addOption(Option.builder("v").longOpt("privatekey").hasArg().argName("path to key file")
-				.desc("needed for transaction publishing").build());
-		options.addOption(Option.builder("m").longOpt("message").hasArg().argName("message to post")
-				.desc("needed for transaction publishing").build());
-		options.addOption(Option.builder("s").longOpt("sender").hasArg().argName("address hash (Base64)")
-				.desc("needed for transaction publishing").build());
-
+		options.addOption(Option.builder("o").longOpt("node").hasArg().argName("Node URL").desc("").build());
+		options.addOption(
+				Option.builder("n").longOpt("name").hasArg().argName("name for new address").desc("").build());
+		options.addOption(
+				Option.builder("p").longOpt("publickey").hasArg().argName("path to key file").desc("").build());
+		options.addOption(
+				Option.builder("v").longOpt("privatekey").hasArg().argName("path to key file").desc("").build());
+		options.addOption(Option.builder("m").longOpt("message").hasArg().argName("message to post").desc("").build());
+		options.addOption(
+				Option.builder("s").longOpt("sender").hasArg().argName("address hash (Base64)").desc("").build());
+		options.addOption(Option.builder("fn").longOpt("firstName").hasArg().argName("Firstname").desc("").build());
+		options.addOption(Option.builder("ln").longOpt("lastName").hasArg().argName("Lastname").desc("").build());
+		options.addOption(Option.builder("bd").longOpt("birthday").hasArg().argName("birthday").desc("").build());
+		options.addOption(Option.builder("mt").longOpt("mother").hasArg().argName("mother").desc("").build());
+		options.addOption(Option.builder("ft").longOpt("father").hasArg().argName("father").desc("").build());
+		options.addOption(Option.builder("addr").longOpt("address").hasArg().argName("address").desc("").build());
+		options.addOption(Option.builder("p1").longOpt("person1").hasArg().argName("person 1").desc("").build());
+		options.addOption(Option.builder("p2").longOpt("person2").hasArg().argName("person 2").desc("").build());
+		options.addOption(Option.builder("dt").longOpt("date").hasArg().argName("date").desc("").build());
+		options.addOption(Option.builder("cty").longOpt("city").hasArg().argName("city").desc("").build());
+		options.addOption(Option.builder("str").longOpt("street").hasArg().argName("street").desc("").build());
 		return options;
 	}
 

@@ -1,16 +1,19 @@
 package de.pk.jblockchain.node.service;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +25,9 @@ import de.pk.jblockchain.node.Config;
 
 @Service
 public class BlockService {
+
+	@Value("${storage.path}")
+	private String storePath;
 
 	private final static Logger LOG = LoggerFactory.getLogger(BlockService.class);
 
@@ -51,13 +57,25 @@ public class BlockService {
 	 * save values
 	 *
 	 */
-	public void save() {
+	public void save() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		FileOutputStream fStream = null;
+		GZIPOutputStream zStream = null;
 		try {
-			mapper.writeValue(new File("/store/blockchain.json"), this.blockchain);
+			fStream = new FileOutputStream(System.getProperty("user.home") + this.storePath + "blockchain.json.gz");
+			zStream = new GZIPOutputStream(new BufferedOutputStream(fStream));
+			mapper.writeValue(zStream, this.blockchain);
+
+		} finally {
+			if (zStream != null) {
+				zStream.flush();
+				zStream.close();
+			}
+			if (fStream != null) {
+				fStream.flush();
+				fStream.close();
+			}
 			System.out.println("Blockchain Saved!");
-		} catch (IOException e) {
-			System.out.println("Unable to save blockchain: " + e.getMessage());
 		}
 	}
 
@@ -84,7 +102,11 @@ public class BlockService {
 	public synchronized boolean append(Block block) throws GeneralSecurityException {
 		if (verify(block)) {
 			blockchain.add(block);
-			this.save();
+			try {
+				this.save();
+			} catch (IOException e) {
+				System.out.println("Unable to save blockchain: " + e.getMessage());
+			}
 
 			// remove transactions from pool
 			block.getTransactions().forEach(transactionService::remove);

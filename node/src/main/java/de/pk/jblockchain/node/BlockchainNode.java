@@ -1,17 +1,23 @@
 package de.pk.jblockchain.node;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.pk.jblockchain.common.domain.Address;
@@ -26,8 +32,18 @@ import de.pk.jblockchain.node.service.TransactionService;
 @SpringBootApplication
 public class BlockchainNode {
 
+	@Value("${storage.path}")
+	private String storePath;
+
 	public static void main(String[] args) {
 		SpringApplication.run(BlockchainNode.class, args);
+	}
+
+	private void createDirectories() throws IOException {
+		java.nio.file.Path p = Files.createDirectories(Paths.get(System.getProperty("user.home") + this.storePath));
+		if (!p.toFile().exists()) {
+			System.out.println("Could not create path " + p.toString());
+		}
 	}
 
 	@Bean
@@ -35,11 +51,16 @@ public class BlockchainNode {
 		return args -> {
 			// read json
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			TypeReference<Map<String, Address>> typeReference = new TypeReference<Map<String, Address>>() {
 			};
-			InputStream inputStream = TypeReference.class.getResourceAsStream("/store/address.json");
 			try {
-				Map<String, Address> addresses = mapper.readValue(inputStream, typeReference);
+				createDirectories();
+				System.out.println("Rootpath=" + BlockchainNode.class.getResource(this.storePath + "."));
+				FileInputStream fStream = new FileInputStream(
+						System.getProperty("user.home") + this.storePath + "address.json.gz");
+				GZIPInputStream zStream = new GZIPInputStream(new BufferedInputStream(fStream));
+				Map<String, Address> addresses = mapper.readValue(zStream, typeReference);
 				addressService.init(addresses);
 			} catch (IOException e) {
 				System.out.println("Unable to load addresses: " + e.getMessage());
@@ -52,11 +73,15 @@ public class BlockchainNode {
 		return args -> {
 			// read json
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
 			};
-			InputStream inputStream = TypeReference.class.getResourceAsStream("/store/blockchain.json");
 			try {
-				List<Block> blocks = mapper.readValue(inputStream, typeReference);
+				createDirectories();
+				FileInputStream fStream = new FileInputStream(
+						System.getProperty("user.home") + this.storePath + "blockchain.json.gz");
+				GZIPInputStream zStream = new GZIPInputStream(new BufferedInputStream(fStream));
+				List<Block> blocks = mapper.readValue(zStream, typeReference);
 				blockService.init(blocks);
 			} catch (IOException e) {
 				System.out.println("Unable to load blocks: " + e.getMessage());
@@ -69,11 +94,15 @@ public class BlockchainNode {
 		return args -> {
 			// read json
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			TypeReference<Set<Node>> typeReference = new TypeReference<Set<Node>>() {
 			};
-			InputStream inputStream = TypeReference.class.getResourceAsStream("/store/node.json");
 			try {
-				Set<Node> nodes = mapper.readValue(inputStream, typeReference);
+				createDirectories();
+				FileInputStream fStream = new FileInputStream(
+						System.getProperty("user.home") + this.storePath + "node.json.gz");
+				GZIPInputStream zStream = new GZIPInputStream(new BufferedInputStream(fStream));
+				Set<Node> nodes = mapper.readValue(zStream, typeReference);
 				nodeService.init(nodes);
 			} catch (IOException e) {
 				System.out.println("Unable to load nodes: " + e.getMessage());
@@ -86,11 +115,15 @@ public class BlockchainNode {
 		return args -> {
 			// read json
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 			TypeReference<Set<Transaction>> typeReference = new TypeReference<Set<Transaction>>() {
 			};
-			InputStream inputStream = TypeReference.class.getResourceAsStream("/store/transaction.json");
 			try {
-				Set<Transaction> transactions = mapper.readValue(inputStream, typeReference);
+				createDirectories();
+				FileInputStream fStream = new FileInputStream(
+						System.getProperty("user.home") + this.storePath + "transaction.json.gz");
+				GZIPInputStream zStream = new GZIPInputStream(new BufferedInputStream(fStream));
+				Set<Transaction> transactions = mapper.readValue(zStream, typeReference);
 				transactionService.init(transactions);
 			} catch (IOException e) {
 				System.out.println("Unable to load transactions: " + e.getMessage());

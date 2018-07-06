@@ -1,15 +1,18 @@
 package de.pk.jblockchain.node.service;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +23,9 @@ import de.pk.jblockchain.common.domain.Node;
 
 @Service
 public class AddressService {
+
+	@Value("${storage.path}")
+	private String storePath;
 
 	private final static Logger LOG = LoggerFactory.getLogger(AddressService.class);
 
@@ -62,13 +68,25 @@ public class AddressService {
 	 * save values
 	 *
 	 */
-	public void save() {
+	public void save() throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
+		FileOutputStream fStream = null;
+		GZIPOutputStream zStream = null;
 		try {
-			mapper.writeValue(new File("/store/address.json"), this.addresses);
-			System.out.println("Users Saved!");
-		} catch (IOException e) {
-			System.out.println("Unable to save addresses: " + e.getMessage());
+			fStream = new FileOutputStream(System.getProperty("user.home") + this.storePath + "address.json.gz");
+			zStream = new GZIPOutputStream(new BufferedOutputStream(fStream));
+			mapper.writeValue(zStream, this.addresses);
+
+		} finally {
+			if (zStream != null) {
+				zStream.flush();
+				zStream.close();
+			}
+			if (fStream != null) {
+				fStream.flush();
+				fStream.close();
+			}
+			System.out.println("Addresses saved!");
 		}
 	}
 
@@ -80,7 +98,11 @@ public class AddressService {
 	 */
 	public synchronized void add(Address address) {
 		addresses.put(Base64.encodeBase64String(address.getHash()), address);
-		this.save();
+		try {
+			this.save();
+		} catch (IOException e) {
+			System.out.println("Unable to save addresses: " + e.getMessage());
+		}
 	}
 
 	/**
