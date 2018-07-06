@@ -43,6 +43,8 @@ public class BlockchainClient {
 
 	private static Boolean sslEnabled;
 
+	private static String storePath;
+
 	public static void main(String args[]) throws Exception {
 		Properties props = new Properties();
 		// System.out.println(BlockchainClient.class.getResource("/."));
@@ -50,6 +52,7 @@ public class BlockchainClient {
 		serverAddr = props.getProperty("server.address");
 		serverPort = props.getProperty("server.port");
 		sslEnabled = Boolean.valueOf(props.getProperty("server.ssl.enabled"));
+		storePath = props.getProperty("storage.path");
 
 		CommandLineParser parser = new DefaultParser();
 		Options options = getOptions();
@@ -75,7 +78,7 @@ public class BlockchainClient {
 			if (publickey == null) {
 				throw new ParseException("publickey is required");
 			}
-			publishAddress(Paths.get(publickey));
+			publishAddress(Paths.get(System.getProperty("user.home") + storePath + publickey));
 
 		} else if (line.hasOption("transaction")) {
 			String message = line.getOptionValue("message");
@@ -96,8 +99,8 @@ public class BlockchainClient {
 			String address = line.getOptionValue("address");
 			String mother = line.getOptionValue("mother");
 			String father = line.getOptionValue("father");
-			addCitizen(Paths.get(privatekey), Base64.decodeBase64(sender), firstName, lastName, birthday, address,
-					mother, father);
+			addCitizen(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					firstName, lastName, birthday, address, mother, father);
 		} else if (line.hasOption("marriage")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
@@ -106,14 +109,16 @@ public class BlockchainClient {
 			String person2 = line.getOptionValue("person2");
 			DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
 			Date date = format.parse(line.getOptionValue("date"));
-			marriage(Paths.get(privatekey), Base64.decodeBase64(sender), person1, person2, date);
+			marriage(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					person1, person2, date);
 		} else if (line.hasOption("divorce")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String person1 = line.getOptionValue("person1");
 			String person2 = line.getOptionValue("person2");
-			divorce(Paths.get(privatekey), Base64.decodeBase64(sender), person1, person2);
+			divorce(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					person1, person2);
 		} else if (line.hasOption("declare-death")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
@@ -122,34 +127,39 @@ public class BlockchainClient {
 			String lastName = line.getOptionValue("lastName");
 			DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
 			Date date = format.parse(line.getOptionValue("date"));
-			declareDeath(Paths.get(privatekey), Base64.decodeBase64(sender), firstName, lastName, date);
+			declareDeath(Paths.get(System.getProperty("user.home") + storePath + privatekey),
+					Base64.decodeBase64(sender), firstName, lastName, date);
 		} else if (line.hasOption("declare-alive")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String firstName = line.getOptionValue("firstName");
 			String lastName = line.getOptionValue("lastName");
-			declareAlive(Paths.get(privatekey), Base64.decodeBase64(sender), firstName, lastName);
+			declareAlive(Paths.get(System.getProperty("user.home") + storePath + privatekey),
+					Base64.decodeBase64(sender), firstName, lastName);
 		} else if (line.hasOption("add-city")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String city = line.getOptionValue("city");
-			addCity(Paths.get(privatekey), Base64.decodeBase64(sender), city);
+			addCity(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					city);
 		} else if (line.hasOption("add-street")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String city = line.getOptionValue("city");
 			String street = line.getOptionValue("street");
-			addStreet(Paths.get(privatekey), Base64.decodeBase64(sender), city, street);
+			addStreet(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					city, street);
 		} else if (line.hasOption("add-house")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String street = line.getOptionValue("street");
 			Integer houseNr = Integer.valueOf(line.getOptionValue("houseNr"));
-			addHouse(Paths.get(privatekey), Base64.decodeBase64(sender), street, houseNr);
+			addHouse(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					street, houseNr);
 		} else if (line.hasOption("set-address")) {
 			// TODO: implementieren
 			String sender = line.getOptionValue("sender");
@@ -157,7 +167,8 @@ public class BlockchainClient {
 			String firstName = line.getOptionValue("firstName");
 			String lastName = line.getOptionValue("lastName");
 			String address = line.getOptionValue("address");
-			setAddress(Paths.get(privatekey), Base64.decodeBase64(sender), firstName, lastName, address);
+			setAddress(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
+					firstName, lastName, address);
 		} else if (line.hasOption("show-cities")) {
 			// TODO: implementieren
 			showCities();
@@ -227,8 +238,10 @@ public class BlockchainClient {
 
 	private static void generateKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException, IOException {
 		KeyPair keyPair = SignatureUtils.generateKeyPair();
-		Files.write(Paths.get("key.priv"), keyPair.getPrivate().getEncoded());
-		Files.write(Paths.get("key.pub"), keyPair.getPublic().getEncoded());
+		Files.write(Paths.get(System.getProperty("user.home") + storePath + "key.priv"),
+				keyPair.getPrivate().getEncoded());
+		Files.write(Paths.get(System.getProperty("user.home") + storePath + "key.pub"),
+				keyPair.getPublic().getEncoded());
 	}
 
 	private static void publishAddress(Path publicKey) throws IOException {

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -26,6 +27,7 @@ import de.pk.jblockchain.common.domain.Node;
 import de.pk.jblockchain.common.domain.Transaction;
 import de.pk.jblockchain.node.service.AddressService;
 import de.pk.jblockchain.node.service.BlockService;
+import de.pk.jblockchain.node.service.MiningService;
 import de.pk.jblockchain.node.service.NodeService;
 import de.pk.jblockchain.node.service.TransactionService;
 
@@ -35,8 +37,13 @@ public class BlockchainNode {
 	@Value("${storage.path}")
 	private String storePath;
 
+	@Autowired
+	private static MiningService miningService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(BlockchainNode.class, args);
+		miningService.startMiner();
+		System.out.println("Mining process started!");
 	}
 
 	private void createDirectories() throws IOException {
