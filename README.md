@@ -30,6 +30,8 @@ Forks are welcome under Apache 2.0 license.
 cd jblockchain
 ./mvnw package
 
+# please respect: all json.gz for blockchain files will be deleted after compiling because of unit test case issues, so please create a backup if you change something!
+
 This builds these 3 Spring Boot/Maven modules:
 * __node__: part of the blockchain network for handling proof of work mining algorithm, building blocks and distributing transactions
 * __client__: a shell client to communicate to local blockchain node
