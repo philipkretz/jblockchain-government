@@ -59,6 +59,12 @@
             <scope>test</scope>
         </dependency>
 
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <!--Version is not needed when used with Spring Boot parent pom file -->
+		    <version>4.5.2</version>
+		</dependency>
     </dependencies>
 
 	<build>

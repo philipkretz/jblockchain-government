@@ -27,10 +27,12 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -236,6 +238,7 @@ public class BlockchainClient {
 		options.addOption(Option.builder("dt").longOpt("date").hasArg().argName("date").desc("").build());
 		options.addOption(Option.builder("cty").longOpt("city").hasArg().argName("city").desc("").build());
 		options.addOption(Option.builder("str").longOpt("street").hasArg().argName("street").desc("").build());
+		options.addOption(Option.builder("hnr").longOpt("houseNr").hasArg().argName("houseNr").desc("").build());
 		return options;
 	}
 
@@ -439,13 +442,17 @@ public class BlockchainClient {
 	 */
 	private static void showCities() throws Exception {
 		String protocol = sslEnabled ? "https" : "http";
-		RestTemplate restTemplate = new RestTemplate();
+
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+				HttpClientBuilder.create().build());
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
 		};
 		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<TypeReference<List<Block>>> request = new HttpEntity<>(typeReference);
+		HttpEntity<Object> request = new HttpEntity<>(typeReference);
 		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
 		InputStream responseInputStream = responseEntity.getBody().getInputStream();
 		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
@@ -469,13 +476,17 @@ public class BlockchainClient {
 	 */
 	private static void showCitizens(String city) throws Exception {
 		String protocol = sslEnabled ? "https" : "http";
-		RestTemplate restTemplate = new RestTemplate();
+
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+				HttpClientBuilder.create().build());
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
 		};
 		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<TypeReference<List<Block>>> request = new HttpEntity<>(typeReference);
+		HttpEntity<Object> request = new HttpEntity<>(typeReference);
 		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
 		InputStream responseInputStream = responseEntity.getBody().getInputStream();
 		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
@@ -530,13 +541,17 @@ public class BlockchainClient {
 	 */
 	private static void showCitizenDetails(String city, String name) throws Exception {
 		String protocol = sslEnabled ? "https" : "http";
-		RestTemplate restTemplate = new RestTemplate();
+
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+				HttpClientBuilder.create().build());
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
 		};
 		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<TypeReference<List<Block>>> request = new HttpEntity<>(typeReference);
+		HttpEntity<Object> request = new HttpEntity<>(typeReference);
 		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
 		InputStream responseInputStream = responseEntity.getBody().getInputStream();
 		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
@@ -647,13 +662,17 @@ public class BlockchainClient {
 	 */
 	private static void showBirthDeathRate(String city) throws Exception {
 		String protocol = sslEnabled ? "https" : "http";
-		RestTemplate restTemplate = new RestTemplate();
+
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+				HttpClientBuilder.create().build());
+		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
 		};
 		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<TypeReference<List<Block>>> request = new HttpEntity<>(typeReference);
+		HttpEntity<Object> request = new HttpEntity<>(typeReference);
 		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
 		InputStream responseInputStream = responseEntity.getBody().getInputStream();
 		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);

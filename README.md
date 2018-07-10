@@ -61,8 +61,8 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --stop-miner
 cd client/target
 java -jar client-0.0.1-SNAPSHOT.jar --keypair
 
-# add an address to blockchain (normally not needed)
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --address --publickey key.pub
+# add an address to blockchain (normally just needed once)
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --publish-address --publickey key.pub
 
 # sending messages (just for explanation, normally not needed)
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --transaction --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --message "Hallo Welt" --privatekey key.priv 
@@ -88,7 +88,7 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --set-address --firstName Bart
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --marriage --person1 "Homer Simpson" --person2 "Marge Simpson" --date 19740523 --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
 
 # note a divorce (hopefully not)
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --marriage --person1 "Homer Simpson" --person2 "Marge Simpson" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --divorce --person1 "Whitney Tears" --person2 "Lars Vegas" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
 
 # declare death of a citizen (the sad part - I hope)
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --declare-death --firstName Pablo --lastName Escobar --date 19930212 --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 

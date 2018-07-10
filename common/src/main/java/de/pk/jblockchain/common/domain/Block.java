@@ -58,7 +58,7 @@ public class Block {
 
 	public Block() {
 		Properties props = new Properties();
-		// System.out.println(Block.class.getResource("/."));
+		System.out.println("Resource path: " + Block.class.getResource("/."));
 		try {
 			props.load(Block.class.getResourceAsStream("/application.properties"));
 			this.cpuCostParam = Integer.valueOf(props.getProperty("hashing.scrypt.cpuCostParam"));
