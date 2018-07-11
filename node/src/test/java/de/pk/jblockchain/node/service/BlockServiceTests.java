@@ -16,8 +16,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,8 +29,6 @@ import de.pk.jblockchain.common.domain.Transaction;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class BlockServiceTests {
-	private final static Logger LOG = LoggerFactory.getLogger(BlockServiceTests.class);
-
 	private final static byte[] fixedSignature = new byte[] { 48, 44, 2, 20, 89, 48, -114, -49, 36, 65, 116, -5, 88, 6,
 			-38, -110, -30, -73, 59, -53, 19, -49, 122, 90, 2, 20, 111, 38, 55, -120, -125, 17, -66, -8, -121, 85, 31,
 			-82, -80, -31, -33, 116, 121, -90, 123, -113 };

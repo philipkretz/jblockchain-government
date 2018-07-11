@@ -2,6 +2,8 @@ package de.pk.jblockchain.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,12 +29,6 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -114,6 +110,11 @@ public class BlockchainClient {
 			String address = line.getOptionValue("address");
 			String mother = line.getOptionValue("mother");
 			String father = line.getOptionValue("father");
+			if (sender == null || firstName == null || lastName == null || birthday == null || address == null
+					|| mother == null || father == null || privatekey == null) {
+				throw new ParseException(
+						"sender, firstName, lastName, birthday, address, mother, father and privatekey is required");
+			}
 			addCitizen(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					firstName, lastName, birthday, address, mother, father);
 		} else if (line.hasOption("marriage")) {
@@ -123,6 +124,9 @@ public class BlockchainClient {
 			String person2 = line.getOptionValue("person2");
 			DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
 			Date date = format.parse(line.getOptionValue("date"));
+			if (sender == null || person1 == null || person2 == null || date == null || privatekey == null) {
+				throw new ParseException("sender, person1, person2, date and privatekey is required");
+			}
 			marriage(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					person1, person2, date);
 		} else if (line.hasOption("divorce")) {
@@ -130,6 +134,9 @@ public class BlockchainClient {
 			String privatekey = line.getOptionValue("privatekey");
 			String person1 = line.getOptionValue("person1");
 			String person2 = line.getOptionValue("person2");
+			if (sender == null || person1 == null || person2 == null || privatekey == null) {
+				throw new ParseException("sender, person1, person2 and privatekey is required");
+			}
 			divorce(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					person1, person2);
 		} else if (line.hasOption("declare-death")) {
@@ -139,6 +146,9 @@ public class BlockchainClient {
 			String lastName = line.getOptionValue("lastName");
 			DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
 			Date date = format.parse(line.getOptionValue("date"));
+			if (sender == null || firstName == null || lastName == null || date == null || privatekey == null) {
+				throw new ParseException("sender, firstName, lastName, date and privatekey is required");
+			}
 			declareDeath(Paths.get(System.getProperty("user.home") + storePath + privatekey),
 					Base64.decodeBase64(sender), firstName, lastName, date);
 		} else if (line.hasOption("declare-alive")) {
@@ -146,12 +156,18 @@ public class BlockchainClient {
 			String privatekey = line.getOptionValue("privatekey");
 			String firstName = line.getOptionValue("firstName");
 			String lastName = line.getOptionValue("lastName");
+			if (sender == null || firstName == null || lastName == null || privatekey == null) {
+				throw new ParseException("sender, firstName, lastName and privatekey is required");
+			}
 			declareAlive(Paths.get(System.getProperty("user.home") + storePath + privatekey),
 					Base64.decodeBase64(sender), firstName, lastName);
 		} else if (line.hasOption("add-city")) {
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
 			String city = line.getOptionValue("city");
+			if (sender == null || city == null || privatekey == null) {
+				throw new ParseException("sender, city and privatekey is required");
+			}
 			addCity(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					city);
 		} else if (line.hasOption("add-street")) {
@@ -159,6 +175,9 @@ public class BlockchainClient {
 			String privatekey = line.getOptionValue("privatekey");
 			String city = line.getOptionValue("city");
 			String street = line.getOptionValue("street");
+			if (sender == null || city == null || street == null || privatekey == null) {
+				throw new ParseException("sender, city, street and privatekey is required");
+			}
 			addStreet(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					city, street);
 		} else if (line.hasOption("add-house")) {
@@ -166,6 +185,9 @@ public class BlockchainClient {
 			String privatekey = line.getOptionValue("privatekey");
 			String street = line.getOptionValue("street");
 			Integer houseNr = Integer.valueOf(line.getOptionValue("houseNr"));
+			if (sender == null || houseNr == null || street == null || privatekey == null) {
+				throw new ParseException("sender, street, houseNr and privatekey is required");
+			}
 			addHouse(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					street, houseNr);
 		} else if (line.hasOption("set-address")) {
@@ -174,19 +196,31 @@ public class BlockchainClient {
 			String firstName = line.getOptionValue("firstName");
 			String lastName = line.getOptionValue("lastName");
 			String address = line.getOptionValue("address");
+			if (sender == null || firstName == null || lastName == null || address == null || privatekey == null) {
+				throw new ParseException("sender, firstName, lastName, address and privatekey is required");
+			}
 			setAddress(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
 					firstName, lastName, address);
 		} else if (line.hasOption("show-cities")) {
 			showCities();
 		} else if (line.hasOption("show-citizens")) {
 			String city = line.getOptionValue("city");
+			if (city == null) {
+				throw new ParseException("city is required");
+			}
 			showCitizens(city);
 		} else if (line.hasOption("show-citizen-details")) {
 			String city = line.getOptionValue("city");
 			String name = line.getOptionValue("name");
+			if (city == null || name == null) {
+				throw new ParseException("city and name is required");
+			}
 			showCitizenDetails(city, name);
 		} else if (line.hasOption("show-birth-death-rate")) {
 			String city = line.getOptionValue("city");
+			if (city == null) {
+				throw new ParseException("city is required");
+			}
 			showBirthDeathRate(city);
 		}
 
@@ -383,7 +417,7 @@ public class BlockchainClient {
 	 * @throws Exception
 	 */
 	private static void addCity(Path privateKey, byte[] senderHash, String name) throws Exception {
-		String message = String.format("AC{%s}", name);
+		String message = String.format("AC%s", name);
 		publishTransaction(privateKey, message, senderHash);
 	}
 
@@ -441,27 +475,16 @@ public class BlockchainClient {
 	 * @throws Exception
 	 */
 	private static void showCities() throws Exception {
-		String protocol = sslEnabled ? "https" : "http";
-
-		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
-				HttpClientBuilder.create().build());
-		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
-		};
-		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<Object> request = new HttpEntity<>(typeReference);
-		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
-		InputStream responseInputStream = responseEntity.getBody().getInputStream();
-		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
-		List<Block> blocks = mapper.readValue(zStream, typeReference);
-		for (Block block : blocks) {
-			for (Transaction trans : block.getTransactions()) {
-				String msg = trans.getText();
-				if (msg.startsWith("AC")) {
-					System.out.println(msg.substring(2));
+		List<Block> blocks = getBlockchain();
+		if (blocks.size() > 0) {
+			for (Block block : blocks) {
+				if (block.getTransactions().size() > 0) {
+					for (Transaction trans : block.getTransactions()) {
+						String msg = trans.getText();
+						if (msg.startsWith("AC")) {
+							System.out.println(msg.substring(2));
+						}
+					}
 				}
 			}
 		}
@@ -475,54 +498,45 @@ public class BlockchainClient {
 	 * @throws Exception
 	 */
 	private static void showCitizens(String city) throws Exception {
-		String protocol = sslEnabled ? "https" : "http";
-
-		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
-				HttpClientBuilder.create().build());
-		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
-		};
-		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<Object> request = new HttpEntity<>(typeReference);
-		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
-		InputStream responseInputStream = responseEntity.getBody().getInputStream();
-		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
-		List<Block> blocks = mapper.readValue(zStream, typeReference);
+		List<Block> blocks = getBlockchain();
 		int c = 0;
-		for (Block block : blocks) {
-			for (Transaction trans : block.getTransactions()) {
-				String msg = trans.getText();
-				if (msg.startsWith("AD")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[3].contains(city)) {
+		if (blocks.size() > 0) {
+			for (Block block : blocks) {
+				if (block.getTransactions().size() > 0) {
+					for (Transaction trans : block.getTransactions()) {
+						String msg = trans.getText();
+						if (msg.startsWith("AD")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[3].contains(city)) {
 
-						// check if already dead
-						boolean isDead = false;
-						for (Block block2 : blocks) {
-							for (Transaction trans2 : block2.getTransactions()) {
-								String msg2 = trans2.getText();
-								if (msg2.startsWith("DH")) {
-									String[] msg2Arr = msg2.substring(2).split("|");
-									if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
-										isDead = true;
-									}
-								} else if (isDead && msg2.startsWith("DA")) {
-									String[] msg2Arr = msg2.substring(2).split("|");
-									if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
-										isDead = false;
+								// check if already dead
+								boolean isDead = false;
+								for (Block block2 : blocks) {
+									if (block2.getTransactions().size() > 0) {
+										for (Transaction trans2 : block2.getTransactions()) {
+											String msg2 = trans2.getText();
+											if (msg2.startsWith("DH")) {
+												String[] msg2Arr = msg2.substring(2).split("|");
+												if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
+													isDead = true;
+												}
+											} else if (isDead && msg2.startsWith("DA")) {
+												String[] msg2Arr = msg2.substring(2).split("|");
+												if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
+													isDead = false;
+												}
+											}
+										}
 									}
 								}
-							}
-						}
 
-						if (!isDead) {
-							c++;
-							System.out.println("Citizen #" + c + ":");
-							System.out.println("Firstname: " + msgArr[1]);
-							System.out.println("Lastname: " + msgArr[0]);
+								if (!isDead) {
+									c++;
+									System.out.println("Citizen #" + c + ":");
+									System.out.println("Firstname: " + msgArr[1]);
+									System.out.println("Lastname: " + msgArr[0]);
+								}
+							}
 						}
 					}
 				}
@@ -540,22 +554,7 @@ public class BlockchainClient {
 	 * @throws Exception
 	 */
 	private static void showCitizenDetails(String city, String name) throws Exception {
-		String protocol = sslEnabled ? "https" : "http";
-
-		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
-				HttpClientBuilder.create().build());
-		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
-		};
-		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<Object> request = new HttpEntity<>(typeReference);
-		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
-		InputStream responseInputStream = responseEntity.getBody().getInputStream();
-		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
-		List<Block> blocks = mapper.readValue(zStream, typeReference);
+		List<Block> blocks = getBlockchain();
 		ArrayList<String> declaredDeaths = new ArrayList<>();
 		ArrayList<String> declaredAlive = new ArrayList<>();
 		ArrayList<String> addresses = new ArrayList<>();
@@ -564,49 +563,53 @@ public class BlockchainClient {
 		ArrayList<String[]> divorces = new ArrayList<>();
 		String[] personalDetails = null;
 
-		for (Block block : blocks) {
-			for (Transaction trans : block.getTransactions()) {
-				String msg = trans.getText();
-				if (msg.startsWith("AD")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[3].contains(city) && msgArr[1] + " " + msgArr[0] == name) {
-						personalDetails = msgArr;
-					} else if (msgArr[4] == name || msgArr[5] == name) {
-						String[] child = { msgArr[1] + " " + msgArr[0], msgArr[2] };
-						children.add(child);
-					}
-				} else if (msg.startsWith("DH")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[0] + " " + msgArr[1] == name) {
-						declaredDeaths.add(msgArr[2]);
-					}
-				} else if (msg.startsWith("DA")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[0] + " " + msgArr[1] == name) {
-						declaredAlive.add(trans.getTimestamp() + "");
-					}
-				} else if (msg.startsWith("SD")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[0] + " " + msgArr[1] == name) {
-						addresses.add(msgArr[2]);
-					}
-				} else if (msg.startsWith("MR")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[0] == name) {
-						String[] marriage = { msgArr[1], msgArr[2] };
-						marriages.add(marriage);
-					} else if (msgArr[1] == name) {
-						String[] marriage = { msgArr[0], msgArr[2] };
-						marriages.add(marriage);
-					}
-				} else if (msg.startsWith("DV")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[0] == name) {
-						String[] divorce = { msgArr[1], trans.getTimestamp() + "" };
-						divorces.add(divorce);
-					} else if (msgArr[1] == name) {
-						String[] divorce = { msgArr[0], trans.getTimestamp() + "" };
-						divorces.add(divorce);
+		if (blocks.size() > 0) {
+			for (Block block : blocks) {
+				if (block.getTransactions().size() > 0) {
+					for (Transaction trans : block.getTransactions()) {
+						String msg = trans.getText();
+						if (msg.startsWith("AD")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[3].contains(city) && msgArr[1] + " " + msgArr[0] == name) {
+								personalDetails = msgArr;
+							} else if (msgArr[4] == name || msgArr[5] == name) {
+								String[] child = { msgArr[1] + " " + msgArr[0], msgArr[2] };
+								children.add(child);
+							}
+						} else if (msg.startsWith("DH")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[0] + " " + msgArr[1] == name) {
+								declaredDeaths.add(msgArr[2]);
+							}
+						} else if (msg.startsWith("DA")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[0] + " " + msgArr[1] == name) {
+								declaredAlive.add(trans.getTimestamp() + "");
+							}
+						} else if (msg.startsWith("SD")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[0] + " " + msgArr[1] == name) {
+								addresses.add(msgArr[2]);
+							}
+						} else if (msg.startsWith("MR")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[0] == name) {
+								String[] marriage = { msgArr[1], msgArr[2] };
+								marriages.add(marriage);
+							} else if (msgArr[1] == name) {
+								String[] marriage = { msgArr[0], msgArr[2] };
+								marriages.add(marriage);
+							}
+						} else if (msg.startsWith("DV")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[0] == name) {
+								String[] divorce = { msgArr[1], trans.getTimestamp() + "" };
+								divorces.add(divorce);
+							} else if (msgArr[1] == name) {
+								String[] divorce = { msgArr[0], trans.getTimestamp() + "" };
+								divorces.add(divorce);
+							}
+						}
 					}
 				}
 			}
@@ -661,52 +664,43 @@ public class BlockchainClient {
 	 * @throws Exception
 	 */
 	private static void showBirthDeathRate(String city) throws Exception {
-		String protocol = sslEnabled ? "https" : "http";
-
-		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
-				HttpClientBuilder.create().build());
-		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
-
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
-		};
-		String url = protocol + "://" + serverAddr + ":" + serverPort + "/transaction";
-		HttpEntity<Object> request = new HttpEntity<>(typeReference);
-		ResponseEntity<Resource> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, Resource.class);
-		InputStream responseInputStream = responseEntity.getBody().getInputStream();
-		GZIPInputStream zStream = new GZIPInputStream(responseInputStream);
-		List<Block> blocks = mapper.readValue(zStream, typeReference);
+		List<Block> blocks = getBlockchain();
 		HashMap<Integer, Integer[]> yearsMap = new HashMap<>();
 
-		for (Block block : blocks) {
-			for (Transaction trans : block.getTransactions()) {
-				String msg = trans.getText();
-				if (msg.startsWith("AD")) {
-					String[] msgArr = msg.substring(2).split("|");
-					if (msgArr[3].contains(city)) {
-						Integer year = Integer.getInteger(msgArr[2].substring(0, 4));
-						if (!yearsMap.containsKey(year)) {
-							Integer[] birthDeathRate = { 1, 0 };
-							yearsMap.put(year, birthDeathRate);
-						} else {
-							Integer[] birthDeathRate = yearsMap.get(year);
-							birthDeathRate[0]++;
-							yearsMap.put(year, birthDeathRate);
+		if (blocks.size() > 0) {
+			for (Block block : blocks) {
+				if (block.getTransactions().size() > 0) {
+					for (Transaction trans : block.getTransactions()) {
+						String msg = trans.getText();
+						if (msg.startsWith("AD")) {
+							String[] msgArr = msg.substring(2).split("|");
+							if (msgArr[3].contains(city)) {
+								Integer year = Integer.getInteger(msgArr[2].substring(0, 4));
+								if (!yearsMap.containsKey(year)) {
+									Integer[] birthDeathRate = { 1, 0 };
+									yearsMap.put(year, birthDeathRate);
+								} else {
+									Integer[] birthDeathRate = yearsMap.get(year);
+									birthDeathRate[0]++;
+									yearsMap.put(year, birthDeathRate);
+								}
+							}
 						}
-					}
-				}
-				if (msg.startsWith("DH")) {
-					for (Block block2 : blocks) {
-						for (Transaction trans2 : block.getTransactions()) {
-							String msg2 = trans.getText();
-							String[] msgArr2 = msg2.substring(2).split("|");
-							if (msgArr2[3].contains(city)) {
-								String[] msgArr = msg.substring(2).split("|");
-								Integer yearOfDeath = Integer.getInteger(msgArr[2].substring(0, 4));
-								Integer[] birthDeathRate = yearsMap.get(yearOfDeath);
-								birthDeathRate[1]++;
-								yearsMap.put(yearOfDeath, birthDeathRate);
+						if (msg.startsWith("DH")) {
+							for (Block block2 : blocks) {
+								if (block2.getTransactions().size() > 0) {
+									for (Transaction trans2 : block2.getTransactions()) {
+										String msg2 = trans2.getText();
+										String[] msgArr2 = msg2.substring(2).split("|");
+										if (msgArr2[3].contains(city)) {
+											String[] msgArr = msg.substring(2).split("|");
+											Integer yearOfDeath = Integer.getInteger(msgArr[2].substring(0, 4));
+											Integer[] birthDeathRate = yearsMap.get(yearOfDeath);
+											birthDeathRate[1]++;
+											yearsMap.put(yearOfDeath, birthDeathRate);
+										}
+									}
+								}
 							}
 						}
 					}
@@ -716,9 +710,32 @@ public class BlockchainClient {
 
 		System.out.println("Birth-/Death-rate of " + city + ":");
 		System.out.println("-----------------------------------\n");
-		for (Integer year : yearsMap.keySet()) {
-			Integer[] birthDeathRate = yearsMap.get(year);
-			System.out.println(String.format("%i: %i were born, %i died.", year, birthDeathRate[0], birthDeathRate[1]));
+		if (!yearsMap.isEmpty()) {
+			for (Integer year : yearsMap.keySet()) {
+				Integer[] birthDeathRate = yearsMap.get(year);
+				System.out.println(
+						String.format("%i: %i were born, %i died.", year, birthDeathRate[0], birthDeathRate[1]));
+			}
+		} else {
+			System.out.println("0 citizens!");
 		}
+	}
+
+	private static List<Block> getBlockchain() throws Exception {
+		String protocol = sslEnabled ? "https" : "http";
+		URL url = new URL(protocol + "://" + serverAddr + ":" + serverPort + "/transaction");
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestProperty("Accept-Encoding", "gzip");
+		InputStream inp;
+		if ("gzip".equals(con.getContentEncoding())) {
+			inp = new GZIPInputStream(con.getInputStream());
+		} else {
+			inp = con.getInputStream();
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		TypeReference<List<Block>> typeReference = new TypeReference<List<Block>>() {
+		};
+		return mapper.readValue(inp, typeReference);
 	}
 }

@@ -58,13 +58,22 @@ public class Block {
 
 	public Block() {
 		Properties props = new Properties();
-		System.out.println("Resource path: " + Block.class.getResource("/."));
+		// System.out.println("Resource path: " +
+		// Block.class.getResource("/."));
 		try {
 			props.load(Block.class.getResourceAsStream("/application.properties"));
 			this.cpuCostParam = Integer.valueOf(props.getProperty("hashing.scrypt.cpuCostParam"));
 			this.memoryCostParam = Integer.valueOf(props.getProperty("hashing.scrypt.memoryCostParam"));
 			this.parallelizationParam = Integer.valueOf(props.getProperty("hashing.scrypt.parallelizationParam"));
 			this.dkLen = Integer.valueOf(props.getProperty("hashing.scrypt.dkLen"));
+			/*
+			 * System.out.println("cpuCostParam: " + this.cpuCostParam);
+			 * System.out.println("memoryCostParam: " + this.memoryCostParam);
+			 * System.out.println("parallelizationParam: " +
+			 * this.parallelizationParam); System.out.println("dkLen: " +
+			 * this.dkLen); System.out.println("salt: " +
+			 * props.getProperty("hashing.scrypt.salt"));
+			 */
 			String[] saltArr = props.getProperty("hashing.scrypt.salt").split(",");
 			this.salt = new byte[16];
 			int i = 0;

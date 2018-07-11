@@ -104,13 +104,13 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --declare-alive --name Jesus -
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-cities
 
 # list all citizens to a city
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-citizens
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-citizens --city Springfield
 
 # show all details saved to a citizen
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-citizen-details
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-citizen-details --name "Homer Simpson" --city Springfield
 
 # show birth death rate to a city
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-birth-death-rate
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --show-birth-death-rate --city Springfield
 
 
 
