@@ -43,7 +43,7 @@ Forks are welcome under Apache 2.0 license.
 # build
 # - edit config class and files for setting port (default: 21986) and root servers (default: only localhost)
 # - fit code for your needs (optional)
-cd jblockchain
+cd jblockchain-government
 ./mvnw package
 
 # Note: if jar-files do not get generated, it can be a solution to run "mvn clean install" from project main folder!
@@ -74,8 +74,11 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --stop-miner
 
 # Generate keypair in folder HOME/blockchain (call just only once)
 # This generates key.priv and key.pub files for user (as you should know in encryption: never share your key.priv-file and keep it as safe as possible).
-# The local node will distribute this new public address to all other nodes.
+# The local node will distribute this new public address to all other nodes by invoking the publish-address command.
 # Note the sender id as result of this command for sending messages and keep it with your key files!
+# For every manipulating message command you will have to add an address hash as sender.
+# If you did not note it, you will find it via http://localhost:21986/address at the bottom of the list ;-)
+# Ensure that this is also the hash of your key-files or pick the correct one!
 cd client/target
 java -jar client-0.0.1-SNAPSHOT.jar --keypair
 
