@@ -13,7 +13,8 @@ public abstract class Config {
 	/**
 	 * Minimum number of leading zeros every block hash has to fulfill
 	 */
-	public static final int DIFFICULTY = 2;
+	public static final int DIFFICULTY = 1; // at 2, about 1 block mined per 56
+											// min
 
 	/**
 	 * Maximum number of Transactions a Block can hold

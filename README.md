@@ -12,7 +12,23 @@ Also their new born children can be added or citizens can be declared or alive.
 Thus a whole society can simply control itself via a blockchain 3.0.
 The blockchain can and should be fitted and compiled to your special needs.
 Forks are welcome under Apache 2.0 license.
-[![license](https://img.shields.io/badge/license-ASF2-blue.svg)](LICENSE)
+[![license](https://img.shields.io/badge/license-ASF2-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
+   Fork License-Appendix:
+   
+   Copyright 2018, Philip Kretz
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 
 # Additional features and changes to the original JBlockchain:
 - saving CPU power and voltage by replacing SHA256-algorithm with SCrypt
@@ -29,6 +45,8 @@ Forks are welcome under Apache 2.0 license.
 # - fit code for your needs (optional)
 cd jblockchain
 ./mvnw package
+
+# Note: if jar-files do not get generated, it can be a solution to run "mvn clean install" from project main folder!
 
 # please respect: all json.gz for blockchain files will be deleted after compiling because of unit test case issues, so please create a backup if you change something!
 
@@ -70,13 +88,13 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --transaction --sender "Tdz0bK
 # sending special JBlockchain government messages (Kept really simple, I know...)
 
 # add a new city (for what do you need a postcode if you have a blockchain id?)
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-city --name "Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-city --city "Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
 
 # add a new street
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-street --name "Simpson av." --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv
 
 # add a new house
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-house --houseNr 23 --street "Simpson av." --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-house --houseNr 23 --street "Simpson av." --city "Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv
 
 # add a new citizen
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-citizen --firstName Homer --lastName Simpson --birthday 19540204 --father "Grandpa Simpson" --mother "Unknown" --address "Simpson av. 23, Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 

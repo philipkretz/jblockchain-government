@@ -338,7 +338,9 @@ public class BlockchainClient {
 		// additional parameters like birthday, address, father and mother.
 
 		// Format: Lastname|Firstname|Birthday|Address|Mother|Father
-		String message = String.format("AD%s|%s|%s|%s|%s|%s", lastName, firstName, birthday, address, mother, father);
+		DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
+		String message = String.format("AD%s|%s|%s|%s|%s|%s", lastName, firstName, format.format(birthday), address,
+				mother, father);
 		publishTransaction(privateKey, message, senderHash);
 	}
 
@@ -355,7 +357,8 @@ public class BlockchainClient {
 	 */
 	private static void marriage(Path privateKey, byte[] senderHash, String person1, String person2, Date date)
 			throws Exception {
-		String message = String.format("MR%s|%s|%s", person1, person2, date);
+		DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
+		String message = String.format("MR%s|%s|%s", person1, person2, format.format(date));
 		publishTransaction(privateKey, message, senderHash);
 	}
 
@@ -387,7 +390,8 @@ public class BlockchainClient {
 	 */
 	private static void declareDeath(Path privateKey, byte[] senderHash, String firstName, String lastName, Date date)
 			throws Exception {
-		String message = String.format("DH%s|%s|%s", firstName, lastName, date);
+		DateFormat format = new SimpleDateFormat("YYYYMMdd", Locale.ENGLISH);
+		String message = String.format("DH%s|%s|%s", firstName, lastName, format.format(date));
 		publishTransaction(privateKey, message, senderHash);
 	}
 
@@ -506,7 +510,7 @@ public class BlockchainClient {
 					for (Transaction trans : block.getTransactions()) {
 						String msg = trans.getText();
 						if (msg.startsWith("AD")) {
-							String[] msgArr = msg.substring(2).split("|");
+							String[] msgArr = msg.substring(2).split("\\|");
 							if (msgArr[3].contains(city)) {
 
 								// check if already dead
@@ -516,13 +520,13 @@ public class BlockchainClient {
 										for (Transaction trans2 : block2.getTransactions()) {
 											String msg2 = trans2.getText();
 											if (msg2.startsWith("DH")) {
-												String[] msg2Arr = msg2.substring(2).split("|");
-												if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
+												String[] msg2Arr = msg2.substring(2).split("\\|");
+												if (msgArr[0].equals(msg2Arr[0]) && msgArr[1].equals(msg2Arr[1])) {
 													isDead = true;
 												}
 											} else if (isDead && msg2.startsWith("DA")) {
-												String[] msg2Arr = msg2.substring(2).split("|");
-												if (msgArr[0] == msg2Arr[0] && msgArr[1] == msg2Arr[1]) {
+												String[] msg2Arr = msg2.substring(2).split("\\|");
+												if (msgArr[0].equals(msg2Arr[0]) && msgArr[1].equals(msg2Arr[1])) {
 													isDead = false;
 												}
 											}
@@ -569,43 +573,43 @@ public class BlockchainClient {
 					for (Transaction trans : block.getTransactions()) {
 						String msg = trans.getText();
 						if (msg.startsWith("AD")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[3].contains(city) && msgArr[1] + " " + msgArr[0] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (msgArr[3].contains(city) && name.equals(msgArr[1] + " " + msgArr[0])) {
 								personalDetails = msgArr;
-							} else if (msgArr[4] == name || msgArr[5] == name) {
+							} else if (msgArr[4].equals(name) || msgArr[5].equals(name)) {
 								String[] child = { msgArr[1] + " " + msgArr[0], msgArr[2] };
 								children.add(child);
 							}
 						} else if (msg.startsWith("DH")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[0] + " " + msgArr[1] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (name.equals(msgArr[0] + " " + msgArr[1])) {
 								declaredDeaths.add(msgArr[2]);
 							}
 						} else if (msg.startsWith("DA")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[0] + " " + msgArr[1] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (name.equals(msgArr[0] + " " + msgArr[1])) {
 								declaredAlive.add(trans.getTimestamp() + "");
 							}
 						} else if (msg.startsWith("SD")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[0] + " " + msgArr[1] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (name.equals(msgArr[0] + " " + msgArr[1])) {
 								addresses.add(msgArr[2]);
 							}
 						} else if (msg.startsWith("MR")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[0] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (msgArr[0].equals(name)) {
 								String[] marriage = { msgArr[1], msgArr[2] };
 								marriages.add(marriage);
-							} else if (msgArr[1] == name) {
+							} else if (msgArr[1].equals(name)) {
 								String[] marriage = { msgArr[0], msgArr[2] };
 								marriages.add(marriage);
 							}
 						} else if (msg.startsWith("DV")) {
-							String[] msgArr = msg.substring(2).split("|");
-							if (msgArr[0] == name) {
+							String[] msgArr = msg.substring(2).split("\\|");
+							if (msgArr[0].equals(name)) {
 								String[] divorce = { msgArr[1], trans.getTimestamp() + "" };
 								divorces.add(divorce);
-							} else if (msgArr[1] == name) {
+							} else if (msgArr[1].equals(name)) {
 								String[] divorce = { msgArr[0], trans.getTimestamp() + "" };
 								divorces.add(divorce);
 							}
@@ -673,16 +677,19 @@ public class BlockchainClient {
 					for (Transaction trans : block.getTransactions()) {
 						String msg = trans.getText();
 						if (msg.startsWith("AD")) {
-							String[] msgArr = msg.substring(2).split("|");
+							String[] msgArr = msg.substring(2).split("\\|");
 							if (msgArr[3].contains(city)) {
-								Integer year = Integer.getInteger(msgArr[2].substring(0, 4));
-								if (!yearsMap.containsKey(year)) {
-									Integer[] birthDeathRate = { 1, 0 };
-									yearsMap.put(year, birthDeathRate);
-								} else {
-									Integer[] birthDeathRate = yearsMap.get(year);
-									birthDeathRate[0]++;
-									yearsMap.put(year, birthDeathRate);
+								try {
+									Integer year = Integer.valueOf(msgArr[2].substring(0, 4));
+									if (!yearsMap.containsKey(year)) {
+										Integer[] birthDeathRate = { 1, 0 };
+										yearsMap.put(year, birthDeathRate);
+									} else {
+										Integer[] birthDeathRate = yearsMap.get(year);
+										birthDeathRate[0]++;
+										yearsMap.put(year, birthDeathRate);
+									}
+								} catch (NumberFormatException ex) {
 								}
 							}
 						}
@@ -691,13 +698,16 @@ public class BlockchainClient {
 								if (block2.getTransactions().size() > 0) {
 									for (Transaction trans2 : block2.getTransactions()) {
 										String msg2 = trans2.getText();
-										String[] msgArr2 = msg2.substring(2).split("|");
+										String[] msgArr2 = msg2.substring(2).split("\\|");
 										if (msgArr2[3].contains(city)) {
-											String[] msgArr = msg.substring(2).split("|");
-											Integer yearOfDeath = Integer.getInteger(msgArr[2].substring(0, 4));
-											Integer[] birthDeathRate = yearsMap.get(yearOfDeath);
-											birthDeathRate[1]++;
-											yearsMap.put(yearOfDeath, birthDeathRate);
+											String[] msgArr = msg.substring(2).split("\\|");
+											try {
+												Integer yearOfDeath = Integer.valueOf(msgArr[2].substring(0, 4));
+												Integer[] birthDeathRate = yearsMap.get(yearOfDeath);
+												birthDeathRate[1]++;
+												yearsMap.put(yearOfDeath, birthDeathRate);
+											} catch (NumberFormatException ex) {
+											}
 										}
 									}
 								}
@@ -714,7 +724,7 @@ public class BlockchainClient {
 			for (Integer year : yearsMap.keySet()) {
 				Integer[] birthDeathRate = yearsMap.get(year);
 				System.out.println(
-						String.format("%i: %i were born, %i died.", year, birthDeathRate[0], birthDeathRate[1]));
+						String.format("%d: %d were born, %d died.", year, birthDeathRate[0], birthDeathRate[1]));
 			}
 		} else {
 			System.out.println("0 citizens!");
@@ -723,7 +733,7 @@ public class BlockchainClient {
 
 	private static List<Block> getBlockchain() throws Exception {
 		String protocol = sslEnabled ? "https" : "http";
-		URL url = new URL(protocol + "://" + serverAddr + ":" + serverPort + "/transaction");
+		URL url = new URL(protocol + "://" + serverAddr + ":" + serverPort + "/block");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestProperty("Accept-Encoding", "gzip");
 		InputStream inp;

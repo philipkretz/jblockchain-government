@@ -58,6 +58,7 @@ public class MiningService implements Runnable {
 	public void run() {
 		while (runMiner.get()) {
 			try {
+				LOG.info("Collecting transactions...");
 				Block block = mineBlock();
 				if (block != null) {
 					// Found block! Append and publish
@@ -80,6 +81,12 @@ public class MiningService implements Runnable {
 		byte[] previousBlockHash = blockService.getLastBlock() != null ? blockService.getLastBlock().getHash() : null;
 		List<Transaction> transactions = transactionService.getTransactionPool().stream()
 				.limit(Config.MAX_TRANSACTIONS_PER_BLOCK).collect(Collectors.toList());
+		if (transactions.size() > 0) {
+			LOG.info("has Transactions:");
+			for (Transaction trans : transactions) {
+				LOG.info(trans.getText());
+			}
+		}
 
 		// sleep if no more transactions left
 		if (transactions.isEmpty()) {
@@ -95,6 +102,7 @@ public class MiningService implements Runnable {
 		// try new block until difficulty is sufficient
 		while (runMiner.get()) {
 			try {
+				LOG.info("tries increased to " + tries);
 				Block block = new Block(previousBlockHash, transactions, tries);
 				if (block.getLeadingZerosCount() >= Config.DIFFICULTY) {
 					return block;
