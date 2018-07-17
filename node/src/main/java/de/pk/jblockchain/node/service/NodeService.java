@@ -30,7 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.pk.jblockchain.common.domain.Node;
-import de.pk.jblockchain.node.Config;
 
 @Service
 public class NodeService implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
@@ -44,11 +43,11 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 	private final TransactionService transactionService;
 	private final AddressService addressService;
 
-	@Value("${server.address}")
-	private String serverAddr;
-
 	@Value("${server.ssl.enabled}")
 	private Boolean sslEnabled;
+
+	@Value("${blockchain.masterNodeAddresses}")
+	private String masterNodeAddresses;
 
 	private Node self;
 	private Set<Node> knownNodes = new HashSet<>();
@@ -72,7 +71,7 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 	/**
 	 * load initial values
 	 *
-	 * @param Set<Node>
+	 * @param nodes
 	 */
 	public void init(Set<Node> nodes) {
 		this.knownNodes = nodes;
@@ -208,12 +207,11 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 	}
 
 	private Node getSelfNode(EmbeddedServletContainerInitializedEvent embeddedServletContainerInitializedEvent) {
-		String host = this.serverAddr;
+		String host = "127.0.0.1";
 		int port = embeddedServletContainerInitializedEvent.getEmbeddedServletContainer().getPort();
 
 		try {
 			// discover own ip address in public or local network
-			// by Philip Kretz, ich@philipkretz.de
 			String result = "";
 			String externalIP = "";
 			String protocol = this.sslEnabled ? "https" : "http";
@@ -230,7 +228,7 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 				LOG.warn("Could not establish a network connection to discover external ip address.", ex);
 			}
 
-			if (result == "connected") {
+			if (result.equals("connected")) {
 				// discover external ip and try loopback
 				host = externalIP;
 
@@ -247,13 +245,13 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 						Enumeration<InetAddress> ee = n.getInetAddresses();
 						while (ee.hasMoreElements()) {
 							InetAddress i = ee.nextElement();
-							String hostAddr = i.getHostAddress().toString();
+							String hostAddr = i.getHostAddress();
 							LOG.info("hostAddr=" + hostAddr);
-							if (hostAddr == "127.0.0.1" || hostAddr.substring(0, 3) == "10."
-									|| (hostAddr.substring(0, 4) == "172." && hostAddr.substring(6, 7) == "."
+							if (hostAddr.equals("127.0.0.1") || hostAddr.substring(0, 3).equals("10.")
+									|| (hostAddr.substring(0, 4).equals("172.") && hostAddr.substring(6, 7).equals(".")
 											&& (Integer.valueOf(hostAddr.substring(4, 6)) >= 16
 													&& Integer.valueOf(hostAddr.substring(4, 6)) <= 31))
-									|| hostAddr.substring(0, 8) == "192.168.") {
+									|| hostAddr.substring(0, 8).equals("192.168.")) {
 								hostTest = hostAddr;
 
 								LOG.info("Found local ip address " + hostTest);
@@ -266,7 +264,7 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 								result = restTemplate.getForObject(
 										"{protocol}://{hostTest}:{port}/address/check-loopback", String.class, protocol,
 										hostTest, port);
-								if (result == "connected") {
+								if (result.equals("connected")) {
 									host = hostTest;
 									break;
 								}
@@ -294,9 +292,11 @@ public class NodeService implements ApplicationListener<EmbeddedServletContainer
 		try {
 			// Improvement: randomize master node addresses for secure backbone
 			// network
-			// by Philip Kretz, ich@philipkretz.de
-			return new Node(new URL(Config.MASTER_NODE_ADDRESSES[(int) Math
-					.floor(Math.random() * Config.MASTER_NODE_ADDRESSES.length)]));
+
+			String[] masterNodeAddresses = this.masterNodeAddresses.split(",");
+
+			return new Node(
+					new URL(masterNodeAddresses[(int) Math.floor(Math.random() * masterNodeAddresses.length)].trim()));
 		} catch (MalformedURLException e) {
 			LOG.error("Invalid master node URL", e);
 			return new Node();

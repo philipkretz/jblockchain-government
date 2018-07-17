@@ -24,6 +24,7 @@ import de.pk.jblockchain.common.SignatureUtils;
 import de.pk.jblockchain.common.domain.Address;
 import de.pk.jblockchain.common.domain.Node;
 import de.pk.jblockchain.common.domain.Transaction;
+import de.pk.jblockchain.node.service.smartContract.SmartContractService;
 
 @Service
 public class TransactionService {
@@ -34,6 +35,9 @@ public class TransactionService {
 	private final static Logger LOG = LoggerFactory.getLogger(TransactionService.class);
 
 	private final AddressService addressService;
+
+	@Autowired
+	SmartContractService smartContractService;
 
 	/**
 	 * Pool of Transactions which are not included in a Block yet.
@@ -135,6 +139,11 @@ public class TransactionService {
 		Address sender = addressService.getByHash(transaction.getSenderHash());
 		if (sender == null) {
 			LOG.warn("Unknown address " + Base64.encodeBase64String(transaction.getSenderHash()));
+			return false;
+		}
+
+		if (!smartContractService.validateContract(transaction.getText())) {
+			LOG.warn("Invalid message: no contract found for " + transaction.getText());
 			return false;
 		}
 

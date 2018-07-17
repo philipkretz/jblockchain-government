@@ -21,13 +21,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.pk.jblockchain.common.domain.Block;
 import de.pk.jblockchain.common.domain.Node;
-import de.pk.jblockchain.node.Config;
 
 @Service
 public class BlockService {
 
 	@Value("${storage.path}")
 	private String storePath;
+
+	@Value("${blockchain.mining.maxTransactionsPerBlock}")
+	private int maxTransactionsPerBlock;
+
+	@Value("${blockchain.mining.difficulty}")
+	private int miningDifficulty;
 
 	private final static Logger LOG = LoggerFactory.getLogger(BlockService.class);
 
@@ -151,7 +156,7 @@ public class BlockService {
 		}
 
 		// transaction limit
-		if (block.getTransactions().size() > Config.MAX_TRANSACTIONS_PER_BLOCK) {
+		if (block.getTransactions().size() > maxTransactionsPerBlock) {
 			return false;
 		}
 
@@ -161,6 +166,6 @@ public class BlockService {
 		}
 
 		// considered difficulty
-		return block.getLeadingZerosCount() >= Config.DIFFICULTY;
+		return block.getLeadingZerosCount() >= miningDifficulty;
 	}
 }

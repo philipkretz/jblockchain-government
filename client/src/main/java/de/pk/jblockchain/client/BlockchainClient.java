@@ -183,13 +183,14 @@ public class BlockchainClient {
 		} else if (line.hasOption("add-house")) {
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
+			String city = line.getOptionValue("city");
 			String street = line.getOptionValue("street");
 			Integer houseNr = Integer.valueOf(line.getOptionValue("houseNr"));
-			if (sender == null || houseNr == null || street == null || privatekey == null) {
-				throw new ParseException("sender, street, houseNr and privatekey is required");
+			if (sender == null || city == null || houseNr == null || street == null || privatekey == null) {
+				throw new ParseException("sender, city, street, houseNr and privatekey is required");
 			}
 			addHouse(Paths.get(System.getProperty("user.home") + storePath + privatekey), Base64.decodeBase64(sender),
-					street, houseNr);
+					city, street, houseNr);
 		} else if (line.hasOption("set-address")) {
 			String sender = line.getOptionValue("sender");
 			String privatekey = line.getOptionValue("privatekey");
@@ -446,12 +447,14 @@ public class BlockchainClient {
 	 * @description add a new house to a street
 	 * @param privateKey
 	 * @param senderHash
+	 * @param city
 	 * @param street
 	 * @param houseNr
 	 * @throws Exception
 	 */
-	private static void addHouse(Path privateKey, byte[] senderHash, String street, Integer houseNr) throws Exception {
-		String message = String.format("AH%s|%s", street, houseNr);
+	private static void addHouse(Path privateKey, byte[] senderHash, String city, String street, Integer houseNr)
+			throws Exception {
+		String message = String.format("AH%s|%s|%s", city, street, houseNr);
 		publishTransaction(privateKey, message, senderHash);
 	}
 

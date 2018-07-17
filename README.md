@@ -91,7 +91,7 @@ java -jar client/target/client-0.0.1-SNAPSHOT.jar --transaction --sender "Tdz0bK
 # sending special JBlockchain government messages (Kept really simple, I know...)
 
 # add a new city (for what do you need a postcode if you have a blockchain id?)
-java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-city --city "Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv 
+java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-city --city "Springfield" --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv
 
 # add a new street
 java -jar client/target/client-0.0.1-SNAPSHOT.jar --add-street --name "Simpson av." --sender "Tdz0bKDfca3QjFAe5Ccuj9Noy6ah8n+R8DnZznvjic4=" --privatekey key.priv

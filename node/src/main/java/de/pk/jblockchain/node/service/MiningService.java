@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import de.pk.jblockchain.common.domain.Block;
 import de.pk.jblockchain.common.domain.Transaction;
-import de.pk.jblockchain.node.Config;
 
 @Service
 public class MiningService implements Runnable {
@@ -24,6 +24,12 @@ public class MiningService implements Runnable {
 	private final BlockService blockService;
 
 	private AtomicBoolean runMiner = new AtomicBoolean(false);
+
+	@Value("${blockchain.mining.maxTransactionsPerBlock}")
+	private int maxTransactionsPerBlock;
+
+	@Value("${blockchain.mining.difficulty}")
+	private int miningDifficulty;
 
 	@Autowired
 	public MiningService(TransactionService transactionService, NodeService nodeService, BlockService blockService) {
@@ -79,8 +85,8 @@ public class MiningService implements Runnable {
 
 		// get previous hash and transactions
 		byte[] previousBlockHash = blockService.getLastBlock() != null ? blockService.getLastBlock().getHash() : null;
-		List<Transaction> transactions = transactionService.getTransactionPool().stream()
-				.limit(Config.MAX_TRANSACTIONS_PER_BLOCK).collect(Collectors.toList());
+		List<Transaction> transactions = transactionService.getTransactionPool().stream().limit(maxTransactionsPerBlock)
+				.collect(Collectors.toList());
 		if (transactions.size() > 0) {
 			LOG.info("has Transactions:");
 			for (Transaction trans : transactions) {
@@ -104,7 +110,7 @@ public class MiningService implements Runnable {
 			try {
 				LOG.info("tries increased to " + tries);
 				Block block = new Block(previousBlockHash, transactions, tries);
-				if (block.getLeadingZerosCount() >= Config.DIFFICULTY) {
+				if (block.getLeadingZerosCount() >= miningDifficulty) {
 					return block;
 				}
 				tries++;
